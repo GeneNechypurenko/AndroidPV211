@@ -13,6 +13,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.Stack;
+
 public class CalcActivity extends AppCompatActivity {
     private TextView tvExpression;
     private TextView tvResult;
@@ -26,6 +28,7 @@ public class CalcActivity extends AppCompatActivity {
     private String lastOperatorUsed;
     private String expressionsLastValue;
     private String resultValue;
+    int digitsEntriesCounter = 0;
     private boolean isCleared;
 
     @Override
@@ -139,13 +142,12 @@ public class CalcActivity extends AppCompatActivity {
         String operatorKeyEntry = ((Button) view).getText().toString();
         getOperationResult(result, expression, operatorKeyEntry);
         lastOperatorUsed = operatorKeyEntry;
-        Log.d("onOperatorClick", "lastOperatorUsed: " + lastOperatorUsed);
     }
 
     private void getOperationResult(String result, String expression, String operator) {
         double doubleResult = getDoubleResult();
+
         resultValue = formatResult(doubleResult);
-        Log.d("getOperationResult", "resultValue: " + resultValue);
 
         if (!(operator.equals(division) && Double.parseDouble(resultValue) == 0.0)) {
             displayOperator(result, expression, operator);
@@ -200,7 +202,11 @@ public class CalcActivity extends AppCompatActivity {
 
     private void displayOperator(String result, String expression, String operator) {
         if (!result.contains(equal)) {
-            expression = result + operator;
+            if (result.contains(minus)) {
+                expression = "(" + result + ")" + operator;
+            } else {
+                expression = result + operator;
+            }
             result = equal + result;
             tvExpression.setText(expression);
             tvResult.setText(result);
@@ -219,6 +225,7 @@ public class CalcActivity extends AppCompatActivity {
                 tvExpression.setText(expression);
             }
         }
+        digitsEntriesCounter = 0;
     }
 
     private double getDoubleResult() {
@@ -237,26 +244,24 @@ public class CalcActivity extends AppCompatActivity {
         String expression = tvExpression.getText().toString();
         String digitKeyEntry = ((Button) view).getText().toString();
 
-        if (isCleared) {
-            isCleared = false;
-            result = digitKeyEntry;
-            resultValue = result;
-            tvResult.setText(result);
-            Log.d("onDigitClick", "resultValue: " + resultValue);
-        } else if (result.contains(equal) && !expression.endsWith(")")) {
-            if (expression.replaceAll("\\D", "").length() < 11) {
+        if (digitsEntriesCounter < 10) {
+            if (isCleared) {
+                isCleared = false;
+                result = digitKeyEntry;
+                resultValue = result;
+                tvResult.setText(result);
+
+            } else if (result.contains(equal) && !expression.endsWith(")")) {
                 expression += digitKeyEntry;
                 expressionsLastValue = getExpressionLastValue(expression);
                 tvExpression.setText(expression);
-                Log.d("onDigitClick", "expressionsLastValue: " + expressionsLastValue);
-            }
-        } else if (!expression.endsWith(")")) {
-            if (result.replaceAll("\\D", "").length() < 11) {
+
+            } else if (!expression.endsWith(")")) {
                 result += digitKeyEntry;
                 resultValue = result;
                 tvResult.setText(result);
-                Log.d("onDigitClick", "resultValue: " + resultValue);
             }
+            ++digitsEntriesCounter;
         }
     }
 
@@ -264,35 +269,38 @@ public class CalcActivity extends AppCompatActivity {
         String result = tvResult.getText().toString();
         String expression = tvExpression.getText().toString();
 
-        if (isCleared) {
-            if (!result.contains(comma)) {
-                isCleared = false;
+        if (digitsEntriesCounter < 10) {
+            if (isCleared) {
+                if (!result.contains(comma)) {
+                    isCleared = false;
+                    result += comma;
+                    resultValue += ".";
+                    tvResult.setText(result);
+                }
+
+            } else if (result.contains(equal) && !expression.endsWith(")")) {
+                if (!expressionsLastValue.contains(".")) {
+                    if (expression.endsWith(division)
+                            || expression.endsWith(multiply)
+                            || expression.endsWith(minus)
+                            || expression.endsWith(plus)) {
+                        expression += zero;
+                        expression += comma;
+                        expressionsLastValue += ".";
+                    } else if (!expression.endsWith(equal) || !expression.endsWith(")")) {
+                        expression += comma;
+                        expressionsLastValue += ".";
+                    }
+                    tvExpression.setText(expression);
+                }
+
+            } else if (!expression.endsWith(")") && !result.contains(comma)) {
                 result += comma;
                 resultValue += ".";
                 tvResult.setText(result);
-                Log.d("onCommaClick", "resultValue: " + resultValue);
             }
-        } else if (result.contains(equal) && !expression.endsWith(")")) {
-            if (!expressionsLastValue.contains(".")) {
-                if (expression.endsWith(division)
-                        || expression.endsWith(multiply)
-                        || expression.endsWith(minus)
-                        || expression.endsWith(plus)) {
-                    expression += zero;
-                    expression += comma;
-                    expressionsLastValue += ".";
-                } else if (!expression.endsWith(equal) || !expression.endsWith(")")) {
-                    expression += comma;
-                    expressionsLastValue += ".";
-                }
-                tvExpression.setText(expression);
-                Log.d("onCommaClick", "expressionsLastValue: " + expressionsLastValue);
-            }
-        } else if (!expression.endsWith(")") && !result.contains(comma)) {
-            result += comma;
-            resultValue += ".";
-            tvResult.setText(result);
-            Log.d("onCommaClick", "resultValue: " + resultValue);
+
+            ++digitsEntriesCounter;
         }
     }
 
@@ -300,66 +308,130 @@ public class CalcActivity extends AppCompatActivity {
         String result = tvResult.getText().toString();
         String expression = tvExpression.getText().toString();
 
-        if (!isCleared && !result.equals(zero) && !result.contains(equal)) {
-            if (result.startsWith(minus)) {
-                result = result.substring(1);
-            } else {
-                result = minus + result;
+        if (digitsEntriesCounter < 10) {
+            if (!result.equals(zero) && !result.contains(equal)) {
+
+                if (result.startsWith(minus)) {
+                    result = result.substring(1);
+                } else {
+                    result = minus + result;
+                }
+                tvResult.setText(result);
+
+            } else if (result.contains(equal)
+                    && (!expression.endsWith(plus)
+                    || !expression.endsWith(minus)
+                    || !expression.endsWith(multiply)
+                    || !expression.endsWith(division)
+                    || !expression.endsWith(equal))) {
+                expression = getExpressionWithoutLastValue(expression);
+                if (expressionsLastValue.startsWith("-")) {
+                    expression += expressionsLastValue.substring(1);
+                    expressionsLastValue = expressionsLastValue.substring(1);
+                } else {
+                    expression += "(" + minus + expressionsLastValue + ")";
+                    expressionsLastValue = "-" + expressionsLastValue;
+                }
+                tvExpression.setText(expression);
             }
-            tvResult.setText(result);
-        } else if (result.contains(equal)
-                && !expression.endsWith(plus)
-                || !expression.endsWith(minus)
-                || !expression.endsWith(multiply)
-                || !expression.endsWith(division)
-                || !expression.endsWith(equal)) {
-            expression = getExpressionWithoutLastValue(expression);
-            if (expressionsLastValue.startsWith("-")) {
-                expression += expressionsLastValue.substring(1);
-                expressionsLastValue = expressionsLastValue.substring(1);
-            } else {
-                expression += "(" + minus + expressionsLastValue + ")";
-                expressionsLastValue = "-" + expressionsLastValue;
-            }
-            Log.d("onPlusMinusClick",
-                    "expressionsLastValue: " + expressionsLastValue
-                            + "; lastOperatorUsed: " + lastOperatorUsed
-                            + "; resultValue: " + resultValue);
-            tvExpression.setText(expression);
+
+            ++digitsEntriesCounter;
         }
     }
 
     private String getExpressionLastValue(String expression) {
         if (!expression.isEmpty()) {
-            String lastValue = expression
+            String temp;
+
+            temp = expression
                     .substring(expression.lastIndexOf(lastOperatorUsed) + lastOperatorUsed.length())
                     .trim();
-            lastValue = lastValue.replaceAll("[()]", "");
 
-            return lastValue;
+            temp = temp.replaceAll("[()]", "");
+            return temp;
+        }
+        return "";
+    }
+
+    private String getExpressionLastValue(String expression, String operator) {
+        if (!expression.isEmpty()) {
+            String temp = expression.substring(0, expression.length() - 1);
+
+            temp = temp
+                    .substring(temp.lastIndexOf(operator) + operator.length())
+                    .trim();
+
+            temp = temp.replaceAll("[()]", "");
+            return temp;
+        }
+        return "";
+    }
+
+    private String getPrevOperator(String expression) {
+        if (!expression.isEmpty()) {
+            String temp = expression.substring(0, expression.lastIndexOf(lastOperatorUsed) - 1);
+
+            int prevOperatorIndex = Math.max(
+                    Math.max(temp.lastIndexOf(plus), temp.lastIndexOf(minus)),
+                    Math.max(temp.lastIndexOf(multiply), temp.lastIndexOf(division))
+            );
+
+            if (prevOperatorIndex != -1) {
+                return String.valueOf(temp.charAt((prevOperatorIndex)));
+            }
+        }
+        return "";
+    }
+
+    private String getLastOperatorUsed(String expression) {
+        if (!expression.isEmpty()) {
+            String temp = getExpressionWithoutLastValue(expression);
+            return temp.substring(temp.length() - 1);
         }
         return "";
     }
 
     private String getExpressionWithoutLastValue(String expression) {
         if (!expression.isEmpty()) {
-            return expression
-                    .substring(0, expression.lastIndexOf(lastOperatorUsed) + lastOperatorUsed.length())
-                    .trim();
+            if (expressionsLastValue.contains("-")) {
+                return expression
+                        .substring(0, expression.lastIndexOf(lastOperatorUsed) - lastOperatorUsed.length());
+            } else if (!lastOperatorUsed.isEmpty()) {
+                return expression
+                        .substring(0, expression.lastIndexOf(lastOperatorUsed) + lastOperatorUsed.length())
+                        .trim();
+            }
         }
-        return "";
+        return expression;
     }
 
     private void onBackspaceClick(View view) {
         String result = tvResult.getText().toString();
-        if (!result.equals(zero)) {
-            StringBuilder sbResult = new StringBuilder(result);
-            if (sbResult.length() > 1) {
-                sbResult.deleteCharAt(sbResult.length() - 1);
-            } else {
-                sbResult = new StringBuilder(zero);
+        String expression = tvExpression.getText().toString();
+
+        if (digitsEntriesCounter > 0) {
+            if (!result.contains(equal) && !result.equals(zero)) {
+                StringBuilder sbResult = new StringBuilder(result);
+                if (sbResult.length() > 1) {
+                    sbResult.deleteCharAt(sbResult.length() - 1);
+                    digitsEntriesCounter--;
+                } else {
+                    sbResult = new StringBuilder(zero);
+                    clear();
+                }
+                tvResult.setText(sbResult);
+
+            } else if (!expression.isEmpty()
+                    && (!expression.endsWith(plus)
+                    || !expression.endsWith(minus)
+                    || !expression.endsWith(multiply)
+                    || !expression.endsWith(division)
+                    || !expression.endsWith(equal))) {
+                StringBuilder sbExpression = new StringBuilder(expression);
+                sbExpression.deleteCharAt(sbExpression.length() - 1);
+                tvExpression.setText(sbExpression);
+                digitsEntriesCounter--;
             }
-            tvResult.setText(sbResult);
         }
     }
 
@@ -367,22 +439,126 @@ public class CalcActivity extends AppCompatActivity {
         String result = tvResult.getText().toString();
         String expression = tvExpression.getText().toString();
 
-        if (!expression.isEmpty()) {
-            if (expression.endsWith(expressionsLastValue)) {
-                expression = expression.substring(0, expression.length() - expressionsLastValue.length());
+        if (!expression.isEmpty() && !expression.endsWith(lastOperatorUsed)) {
+            lastOperatorUsed = getLastOperatorUsed(expression);
+            expression = getExpressionWithoutLastValue(expression);
+            String prevOperator = getPrevOperator(expression);
 
-                Log.d("onClearEntryClick", "expressionsLastValue " + expressionsLastValue);
-            } else if (expression.endsWith(lastOperatorUsed)) {
-                expression = expression.substring(0, expression.length() - lastOperatorUsed.length());
-
-                Log.d("onClearEntryClick", "lastOperatorUsed " + lastOperatorUsed);
+            if (prevOperator.isEmpty()) {
+                clear();
+                return;
+            } else {
+                lastOperatorUsed = prevOperator;
             }
 
+            expressionsLastValue = getExpressionLastValue(expression, lastOperatorUsed);
+            double doubleResult = rollbackToPreviousResult(expression);
+
+            if (doubleResult % 1 == 0) {
+                result = equal + (int) doubleResult;
+            }
+
+            digitsEntriesCounter = 0;
+            tvResult.setText(result);
             tvExpression.setText(expression);
+
+        } else if (!expression.isEmpty() && expression.endsWith(lastOperatorUsed)) {
+            double doubleResult = rollbackToPreviousResult(expression);
+            if (doubleResult % 1 == 0) {
+                result = equal + (int) doubleResult;
+            }
+            tvResult.setText(result);
+
+            expression = expression.substring(0, expression.length() - 1);
+            expressionsLastValue = getExpressionLastValue(expression);
+            expression = getExpressionWithoutLastValue(expression);
+            String prevOperator = getPrevOperator(expression);
+
+            if (prevOperator.isEmpty()) {
+                clear();
+                return;
+            } else {
+                lastOperatorUsed = prevOperator;
+            }
+            tvExpression.setText(expression);
+
+        } else {
+            clear();
+        }
+    }
+
+    private double rollbackToPreviousResult(String expression) {
+        if (expression.isEmpty()) return 0.0;
+
+        try {
+            return evaluateExpression(expression);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Double.NaN;
+        }
+    }
+
+    private double evaluateExpression(String expression) {
+        Stack<Double> numbers = new Stack<>();
+        Stack<Character> operators = new Stack<>();
+        int i = 0;
+
+        while (i < expression.length()) {
+            char ch = expression.charAt(i);
+
+            if (Character.isDigit(ch) || ch == '.') {
+                StringBuilder num = new StringBuilder();
+                while (i < expression.length() && (Character.isDigit(expression.charAt(i)) || expression.charAt(i) == '.')) {
+                    num.append(expression.charAt(i));
+                    i++;
+                }
+                numbers.push(Double.parseDouble(num.toString()));
+                continue;
+            } else if (ch == '(') {
+                operators.push(ch);
+            } else if (ch == ')') {
+                while (!operators.isEmpty() && operators.peek() != '(') {
+                    numbers.push(applyOp(operators.pop(), numbers.pop(), numbers.pop()));
+                }
+                operators.pop();
+            } else if (isOperator(ch)) {
+                while (!operators.isEmpty() && precedence(operators.peek()) >= precedence(ch)) {
+                    numbers.push(applyOp(operators.pop(), numbers.pop(), numbers.pop()));
+                }
+                operators.push(ch);
+            }
+            i++;
         }
 
-        if (expression.isEmpty()) {
-            clear();
+        while (!operators.isEmpty()) {
+            numbers.push(applyOp(operators.pop(), numbers.pop(), numbers.pop()));
+        }
+
+        return numbers.pop();
+    }
+
+    private boolean isOperator(char ch) {
+        return ch == '+' || ch == '-' || ch == '*' || ch == '/';
+    }
+
+    private int precedence(char op) {
+        if (op == '+' || op == '-') return 1;
+        if (op == '*' || op == '/') return 2;
+        return 0;
+    }
+
+    private double applyOp(char op, double b, double a) {
+        switch (op) {
+            case '+':
+                return a + b;
+            case '-':
+                return a - b;
+            case '*':
+                return a * b;
+            case '/':
+                return b == 0 ? Double.NaN : a / b;
+            default:
+                return 0;
         }
     }
 
@@ -397,6 +573,7 @@ public class CalcActivity extends AppCompatActivity {
         lastOperatorUsed = "";
         expressionsLastValue = "0";
         resultValue = "0";
+        digitsEntriesCounter = 0;
     }
 
     @Override
