@@ -1,34 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:toos="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="@drawable/calc_btn_func"
-    android:backgroundTint="@color/main_layout_bg"
     android:layout_margin="10dp"
+    android:background="@drawable/calc_btn_func"
+    android:backgroundTint="@color/rates_layout_bg"
+    android:orientation="vertical"
     android:paddingHorizontal="10dp"
     android:paddingVertical="5dp">
 
-    <TextView
-        android:id="@+id/nbu_rate_cc"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        toos:text="DZD" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/calc_btn_func"
+        android:backgroundTint="@color/rates_layout_bg"
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/nbu_rate_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        toos:text="Алжирський динар" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            toos:ignore="UselessParent">
 
-    <TextView
-        android:id="@+id/nbu_rate_rate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        toos:text="0.3886" />
+            <TextView
+                android:id="@+id/nbu_rate_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="5dp"
+                android:textColor="@color/main_layout_fg"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/nbu_rate_cc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/main_layout_fg" />
+
+                    <TextView
+                        android:id="@+id/nbu_rate_rate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/main_layout_fg" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/nbu_rate_cc_rev"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/main_layout_fg" />
+
+                    <TextView
+                        android:id="@+id/nbu_rate_rate_rev"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:textColor="@color/main_layout_fg" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>

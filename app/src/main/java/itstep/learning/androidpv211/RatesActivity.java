@@ -2,6 +2,7 @@ package itstep.learning.androidpv211;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,12 +35,16 @@ public class RatesActivity extends AppCompatActivity {
     private ExecutorService pool;
     private final List<NbuRate> nbuRates = new ArrayList<>();
     private NbuRateAdapter nbuRateAdapter;
+    TextView tvExchangeDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_rates);
+
+        tvExchangeDate = findViewById(R.id.nbu_rate_exchangedate);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -50,7 +55,12 @@ public class RatesActivity extends AppCompatActivity {
         CompletableFuture
                 .supplyAsync(this::loadRates, pool)
                 .thenAccept(this::parseNbuResponse)
-                .thenRun(this::showNbuRates);
+                .thenRun(() -> runOnUiThread(() -> {
+                    if (!nbuRates.isEmpty()) {
+                        tvExchangeDate.setText(String.valueOf(nbuRates.get(0).getExchangeDate()));
+                    }
+                    showNbuRates();
+                }));
 
         RecyclerView rvContainer = findViewById(R.id.rates_rv_container);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
