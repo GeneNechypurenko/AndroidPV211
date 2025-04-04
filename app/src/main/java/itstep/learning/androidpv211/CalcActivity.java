@@ -86,53 +86,113 @@ public class CalcActivity extends AppCompatActivity {
 
     private void onSquareRootClick(View view) {
         String result = tvResult.getText().toString();
-        if (!result.equals(zero)) {
-            double parsedResult = Double.parseDouble(result);
-            parsedResult = Math.sqrt(parsedResult);
-            if (parsedResult % 1 == 0) {
-                tvResult.setText(String.valueOf((int) parsedResult));
+        String expression = tvExpression.getText().toString();
+
+        if (!result.equals(zero) && !result.contains(equal)) {
+            double doubleResult = Double.parseDouble(result);
+            doubleResult = Math.sqrt(doubleResult);
+            if (doubleResult % 1 == 0) {
+                resultValue = String.valueOf((int) doubleResult);
             } else {
-                tvResult.setText(String.valueOf(parsedResult));
+                resultValue = String.valueOf(doubleResult);
             }
+            tvResult.setText(resultValue);
+
+        } else if (!expression.endsWith(lastOperatorUsed)) {
+            String temp = getExpressionWithoutLastValue(expression);
+            double doubleLastValue = Double.parseDouble(expressionsLastValue);
+            doubleLastValue = Math.sqrt(doubleLastValue);
+            if (doubleLastValue % 1 == 0) {
+                expressionsLastValue = String.valueOf((int) doubleLastValue);
+            } else {
+                expressionsLastValue = String.valueOf(doubleLastValue);
+            }
+            temp = temp + expressionsLastValue;
+            tvExpression.setText(temp);
         }
     }
 
     private void onSquareClick(View view) {
         String result = tvResult.getText().toString();
-        if (!result.equals(zero)) {
-            double parsedResult = Double.parseDouble(result);
-            parsedResult *= parsedResult;
-            if (parsedResult % 1 == 0) {
-                tvResult.setText(String.valueOf((int) parsedResult));
+        String expression = tvExpression.getText().toString();
+
+        if (!result.equals(zero) && !result.contains(equal)) {
+            double doubleResult = Double.parseDouble(result);
+            doubleResult *= doubleResult;
+            if (doubleResult % 1 == 0) {
+                resultValue = String.valueOf((int) doubleResult);
             } else {
-                tvResult.setText(String.valueOf(parsedResult));
+                resultValue = String.valueOf(doubleResult);
             }
+            tvResult.setText(resultValue);
+
+        } else if (!expression.endsWith(lastOperatorUsed)) {
+            String temp = getExpressionWithoutLastValue(expression);
+            double doubleLastValue = Double.parseDouble(expressionsLastValue);
+            doubleLastValue *= doubleLastValue;
+            if (doubleLastValue % 1 == 0) {
+                expressionsLastValue = String.valueOf((int) doubleLastValue);
+            } else {
+                expressionsLastValue = String.valueOf(doubleLastValue);
+            }
+            temp = temp + expressionsLastValue;
+            tvExpression.setText(temp);
         }
     }
 
     private void onInverseClick(View view) {
         String result = tvResult.getText().toString();
-        if (!result.equals(zero)) {
-            double parsedResult = Double.parseDouble(result);
-            parsedResult = 1 / parsedResult;
-            if (parsedResult % 1 == 0) {
-                tvResult.setText(String.valueOf((int) parsedResult));
+        String expression = tvExpression.getText().toString();
+
+        if (!result.equals(zero) && !result.contains(equal)) {
+            double doubleResult = Double.parseDouble(result);
+            doubleResult = 1 / doubleResult;
+            if (doubleResult % 1 == 0) {
+                resultValue = String.valueOf((int) doubleResult);
             } else {
-                tvResult.setText(String.valueOf(parsedResult));
+                resultValue = String.valueOf(doubleResult);
             }
+            tvResult.setText(resultValue);
+
+        } else if (!expression.endsWith(lastOperatorUsed)) {
+            String temp = getExpressionWithoutLastValue(expression);
+            double doubleLastValue = Double.parseDouble(expressionsLastValue);
+            doubleLastValue = 1 / doubleLastValue;
+            if (doubleLastValue % 1 == 0) {
+                expressionsLastValue = String.valueOf((int) doubleLastValue);
+            } else {
+                expressionsLastValue = String.valueOf(doubleLastValue);
+            }
+            temp = temp + expressionsLastValue;
+            tvExpression.setText(temp);
         }
     }
 
     private void onPercentClick(View view) {
         String result = tvResult.getText().toString();
-        if (!result.equals(zero)) {
-            double parsedResult = Double.parseDouble(result);
-            parsedResult /= 100;
-            if (parsedResult % 1 == 0) {
-                tvResult.setText(String.valueOf((int) parsedResult));
+        String expression = tvExpression.getText().toString();
+
+        if (!result.equals(zero) && !result.contains(equal)) {
+            double doubleResult = Double.parseDouble(result);
+            doubleResult /= 100;
+            if (doubleResult % 1 == 0) {
+                resultValue = String.valueOf((int) doubleResult);
             } else {
-                tvResult.setText(String.valueOf(parsedResult));
+                resultValue = String.valueOf(doubleResult);
             }
+            tvResult.setText(resultValue);
+
+        } else if (!expression.endsWith(lastOperatorUsed)) {
+            String temp = getExpressionWithoutLastValue(expression);
+            double doubleLastValue = Double.parseDouble(expressionsLastValue);
+            doubleLastValue /= 100;
+            if (doubleLastValue % 1 == 0) {
+                expressionsLastValue = String.valueOf((int) doubleLastValue);
+            } else {
+                expressionsLastValue = String.valueOf(doubleLastValue);
+            }
+            temp = temp + expressionsLastValue;
+            tvExpression.setText(temp);
         }
     }
 
