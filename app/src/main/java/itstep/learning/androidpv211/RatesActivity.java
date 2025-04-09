@@ -1,7 +1,10 @@
 package itstep.learning.androidpv211;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -21,11 +24,15 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import itstep.learning.androidpv211.nbu.NbuRateAdapter;
 import itstep.learning.androidpv211.orm.NbuRate;
@@ -35,7 +42,10 @@ public class RatesActivity extends AppCompatActivity {
     private ExecutorService pool;
     private final List<NbuRate> nbuRates = new ArrayList<>();
     private NbuRateAdapter nbuRateAdapter;
-    TextView tvExchangeDate;
+    private TextView tvExchangeDate;
+    private Button btnPickDate;
+    private final SimpleDateFormat apiDateFormat = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+    private final SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,10 +54,12 @@ public class RatesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_rates);
 
         tvExchangeDate = findViewById(R.id.nbu_rate_exchangedate);
+        btnPickDate  = findViewById(R.id.rates_btn_pick_date);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            Insets imeBars = insets.getInsets(WindowInsetsCompat.Type.ime());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, Math.max(systemBars.bottom, imeBars.bottom));
             return insets;
         });
 
@@ -57,9 +69,10 @@ public class RatesActivity extends AppCompatActivity {
                 .thenAccept(this::parseNbuResponse)
                 .thenRun(() -> runOnUiThread(() -> {
                     if (!nbuRates.isEmpty()) {
-                        tvExchangeDate.setText(String.valueOf(nbuRates.get(0).getExchangeDate()));
+                        tvExchangeDate.setText(String.valueOf(displayDateFormat.format(nbuRates.get(0).getExchangeDate())));
                     }
                     showNbuRates();
+                    btnPickDate.setOnClickListener(v -> showDatePicker());
                 }));
 
         RecyclerView rvContainer = findViewById(R.id.rates_rv_container);
@@ -67,6 +80,80 @@ public class RatesActivity extends AppCompatActivity {
         rvContainer.setLayoutManager(layoutManager);
         nbuRateAdapter = new NbuRateAdapter(nbuRates);
         rvContainer.setAdapter(nbuRateAdapter);
+
+        SearchView svFilter = findViewById(R.id.rates_sv_filter);
+        svFilter.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                return onFilterChange(s);
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                return onFilterChange(s);
+            }
+        });
+    }
+
+    private void showDatePicker() {
+        final Calendar calendar = Calendar.getInstance();
+        DatePickerDialog dialog = new DatePickerDialog(this,
+                (view, year, month, dayOfMonth) -> {
+                    calendar.set(year, month, dayOfMonth);
+                    String dateStr = apiDateFormat.format(calendar.getTime());
+                    tvExchangeDate.setText(displayDateFormat.format(calendar.getTime()));
+
+                    CompletableFuture
+                            .supplyAsync(() -> loadRatesByDate(dateStr), pool)
+                            .thenAccept(response -> {
+                                nbuRates.clear();
+                                parseNbuResponse(response);
+                            })
+                            .thenRun(() -> runOnUiThread(() -> {
+                                if (!nbuRates.isEmpty()) {
+                                    tvExchangeDate.setText(String.valueOf(displayDateFormat.format(nbuRates.get(0).getExchangeDate())));
+                                }
+                                nbuRateAdapter.setNbuRates(nbuRates);
+                                showNbuRates();
+                            }));
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+        dialog.show();
+    }
+
+    private String loadRatesByDate(String yyyymmdd) {
+        try {
+            String urlStr = nbuRatesUrl + "&date=" + yyyymmdd;
+            URL url = new URL(urlStr);
+            InputStream urlStream = url.openStream();
+            ByteArrayOutputStream byteBuilder = new ByteArrayOutputStream();
+            byte[] buffer = new byte[8192];
+            int length;
+            while ((length = urlStream.read(buffer)) > 0) {
+                byteBuilder.write(buffer, 0, length);
+            }
+            String data = byteBuilder.toString(StandardCharsets.UTF_8.name());
+            urlStream.close();
+            return data;
+        } catch (Exception ex) {
+            Log.e("loadRatesByDate", "Exception: " + ex.getMessage());
+        }
+        return null;
+    }
+
+    private boolean onFilterChange(String s) {
+        Log.d("onFilterChange", s);
+        String query = s.toUpperCase();
+        nbuRateAdapter.setNbuRates(
+                nbuRates.stream()
+                        .filter(r -> r.getCc().toUpperCase().contains(query)
+                                || r.getTxt().toUpperCase().contains(query))
+                        .collect(Collectors.toList())
+        );
+        return true;
     }
 
     private void showNbuRates() {

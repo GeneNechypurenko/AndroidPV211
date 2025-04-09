@@ -3,6 +3,13 @@
     <string name="main_tv_title">Знайомство з Android</string>
     <string name="main_btn_calc">Калькулятор</string>
     <string name="main_btn_rates">Курси валют</string>
+    <string name="rates_btn_pick_date">Оберіть дату</string>
+    <string name="main_btn_anim">Анімації</string>
+
+    <string name="anim_tv_title">Анімації</string>
+    <string name="anim_tv_alpha">Прозорість</string>
+    <string name="anim_tv_rotate">Поворот</string>
+    <string name="anim_tv_scale">Масштаб</string>
 
     <!--    region Calc      -->
     <string name="calc_btn_0">0</string>

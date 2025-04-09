@@ -15,7 +15,6 @@ public class NbuRateViewHolder extends RecyclerView.ViewHolder {
     private final TextView tvRate;
     private final TextView tvCcRev;
     private final TextView tvRateRev;
-
     private NbuRate nbuRate;
 
     public NbuRateViewHolder(@NonNull View itemView) {
@@ -38,7 +37,6 @@ public class NbuRateViewHolder extends RecyclerView.ViewHolder {
         tvRate.setText(rateStr);
         tvCcRev.setText(ccRevStr);
         tvRateRev.setText(rateRevStr);
-
     }
 
     public NbuRate getNbuRate() {

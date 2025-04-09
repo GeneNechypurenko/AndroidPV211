@@ -13,9 +13,24 @@ import itstep.learning.androidpv211.R;
 import itstep.learning.androidpv211.orm.NbuRate;
 
 public class NbuRateAdapter extends RecyclerView.Adapter<NbuRateViewHolder> {
-    private final List<NbuRate> nbuRates;
+    private List<NbuRate> nbuRates;
 
     public NbuRateAdapter(List<NbuRate> nbuRates) {
+        this.nbuRates = nbuRates;
+    }
+
+    public void setNbuRates(List<NbuRate> nbuRates) {
+        int oldSize = this.nbuRates.size();
+        int newSize = nbuRates.size();
+
+        if (newSize > oldSize) {
+            notifyItemRangeChanged(0, oldSize);
+            notifyItemRangeInserted(oldSize, newSize - oldSize);
+        } else {
+            notifyItemRangeChanged(0, newSize);
+            notifyItemRangeRemoved(newSize, oldSize - newSize);
+        }
+
         this.nbuRates = nbuRates;
     }
 
