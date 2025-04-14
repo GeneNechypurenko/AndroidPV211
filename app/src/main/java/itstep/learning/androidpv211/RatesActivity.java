@@ -54,7 +54,7 @@ public class RatesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_rates);
 
         tvExchangeDate = findViewById(R.id.nbu_rate_exchangedate);
-        btnPickDate  = findViewById(R.id.rates_btn_pick_date);
+        btnPickDate = findViewById(R.id.rates_btn_pick_date);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -174,25 +174,7 @@ public class RatesActivity extends AppCompatActivity {
     }
 
     private String loadRates() {
-        try {
-            URL url = new URL(nbuRatesUrl);
-            InputStream urlStream = url.openStream();
-            ByteArrayOutputStream byteBuilder = new ByteArrayOutputStream();
-            byte[] buffer = new byte[8192];
-            int length;
-            while ((length = urlStream.read(buffer)) > 0) {
-                byteBuilder.write(buffer, 0, length);
-            }
-            String charsetName = StandardCharsets.UTF_8.name();
-            String data = byteBuilder.toString(charsetName);
-            urlStream.close();
-            return data;
-        } catch (MalformedURLException ex) {
-            Log.d("loadRates", "MalformedURLException " + ex.getMessage());
-        } catch (IOException ex) {
-            Log.d("loadRates", "IOException" + ex.getMessage());
-        }
-        return null;
+        return Services.fetchUrl(nbuRatesUrl);
     }
 
     @Override

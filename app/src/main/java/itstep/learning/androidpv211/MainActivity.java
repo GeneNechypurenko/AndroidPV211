@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
         Button calcButton = findViewById(R.id.main_btn_calc);
         calcButton.setOnClickListener(this::onCalcButtonClick);
         findViewById(R.id.main_btn_rates).setOnClickListener(this::onRatesButtonClick);
+        findViewById(R.id.main_btn_chat).setOnClickListener(this::onChatButtonClick);
 
         Button animButton = new Button(this);
         animButton.setText(R.string.main_btn_anim);
@@ -56,5 +57,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void onAnimButtonClick(View view) {
         startActivity(new Intent(this, AnimActivity.class));
+    }
+
+    private void onChatButtonClick(View view) {
+        startActivity(new Intent(this, ChatActivity.class));
     }
 }

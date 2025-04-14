@@ -38,5 +38,8 @@ public class AnimActivity extends AppCompatActivity {
 
         scaleAnimation = AnimationUtils.loadAnimation(this, R.anim.anim_scale);
         findViewById(R.id.anim_v_scale).setOnClickListener(v -> v.startAnimation(scaleAnimation));
+
+        Animation bellAnimation = AnimationUtils.loadAnimation(this, R.anim.anim_bell_swing);
+        findViewById(R.id.anim_v_bell).setOnClickListener(v -> v.startAnimation(bellAnimation));
     }
 }

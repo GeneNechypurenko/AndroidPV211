@@ -146,7 +146,7 @@
         app:layout_constraintWidth_percent="0.25">
 
         <ImageView
-            android:id="@+id/anim_v_dz"
+            android:id="@+id/anim_v_bell"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
