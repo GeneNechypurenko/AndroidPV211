@@ -109,6 +109,13 @@ public class ChatActivity extends AppCompatActivity {
         List<ChatMessage> res = new ArrayList<>();
         try {
             JSONObject root = new JSONObject(body);
+
+            int status = root.optInt("status", 0);
+            if (status != 1) {
+                Log.w("parseChatResponse", "Server returned status " + status + " — ignoring response.");
+                return res;
+            }
+
             JSONArray arr = root.getJSONArray("data");
             for (int i = 0; i < arr.length(); i++) {
                 res.add(ChatMessage.fromJsonObject(arr.getJSONObject(i)));
@@ -118,6 +125,7 @@ public class ChatActivity extends AppCompatActivity {
         }
         return res;
     }
+
 
     @Override
     protected void onDestroy() {
