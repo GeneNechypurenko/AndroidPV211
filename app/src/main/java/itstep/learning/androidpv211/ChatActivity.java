@@ -103,7 +103,8 @@ public class ChatActivity extends AppCompatActivity {
         rvContent.setAdapter(chatMessageAdapter);
 
         findViewById(R.id.chat_btn_send).setOnClickListener(this::onSendClick);
-        restoreMessages();
+        // restoreMessages();
+        restoreMessagesAsync();
         registerChannel();
         Intent intent = getIntent();
         if (intent != null) {
@@ -246,6 +247,37 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    private void restoreMessagesAsync() {
+        CompletableFuture.runAsync(() -> {
+            try (SQLiteDatabase db = openOrCreateDatabase(appDatabase, Context.MODE_PRIVATE, null);
+                 Cursor cursor = db.rawQuery("SELECT * FROM chat_history", null)) {
+
+                if (cursor.moveToFirst()) {
+                    do {
+                        ChatMessage message = ChatMessage.fromCursor(cursor);
+                        synchronized (messages) {
+                            boolean alreadyExists = messages.stream()
+                                    .anyMatch(m -> m.getId().equals(message.getId()));
+                            if (!alreadyExists) {
+                                messages.add(message);
+                            }
+                        }
+                    } while (cursor.moveToNext());
+                }
+
+                runOnUiThread(() -> {
+                    synchronized (messages) {
+                        messages.sort(Comparator.comparing(ChatMessage::getMoment));
+                        chatMessageAdapter.notifyDataSetChanged();
+                    }
+                });
+
+            } catch (Exception e) {
+                Log.e("restoreMessagesAsync", e.getClass().getName() + " " + e.getMessage());
+            }
+        }, pool);
+    }
+
     private void restoreMessages() {
         try (SQLiteDatabase db = openOrCreateDatabase(appDatabase, Context.MODE_PRIVATE, null);
              Cursor cursor = db.rawQuery("SELECT * FROM chat_history", null)) {
@@ -255,7 +287,7 @@ public class ChatActivity extends AppCompatActivity {
                 } while (cursor.moveToNext());
             }
         } catch (Exception e) {
-            Log.e("saveMessages", e.getClass().getName() + " " + e.getMessage());
+            Log.e("restoreMessages", e.getClass().getName() + " " + e.getMessage());
         }
     }
 
